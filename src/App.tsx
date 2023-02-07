@@ -1,24 +1,41 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import Users from "./components/users";
+import Todos from "./components/todos";
+import Login from "./components/login";
+import Error from "./components/error";
+import { ProvideAuth } from "./auth";
+import Root from "./components/root";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Root />,
+    errorElement: <Error />,
+    children: [
+      {
+        path: "users",
+        element: <Users />,
+      },
+      {
+        path: "todos",
+        element: <Todos />,
+      },
+    ],
+  },
+
+  {
+    path: "login",
+    element: <Login />,
+  },
+]);
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="app">
+      <ProvideAuth>
+        <RouterProvider router={router} />
+      </ProvideAuth>
     </div>
   );
 }
