@@ -30,7 +30,7 @@
   text-align: end;
 }
 
-input[type="text"],
+input[type="text"]:not([class="edit-todo-input"]),
 input[type="password"] {
   padding: 0.5rem 0.7rem;
   border: none;
@@ -38,7 +38,7 @@ input[type="password"] {
   border-radius: 0.3rem;
 }
 
-input[type="text"]:focus,
+input[type="text"]:not([class="edit-todo-input"]):focus,
 input[type="password"]:focus {
   outline: 2px solid #1f2937;
 }
@@ -49,7 +49,7 @@ button {
   font-size: 100%;
 }
 
-button {
+button:not([class="native-button"]) {
   background-color: #1f2937;
   color: white;
   border: none;
@@ -70,6 +70,11 @@ button {
   right: 1rem;
 }
 
+.clip-loader-add-todo {
+  position: absolute;
+  right: -2rem;
+}
+
 .root {
   width: 100%;
   display: flex;
@@ -79,19 +84,26 @@ button {
 
 .navbar {
   width: 20%;
-  height: 100%;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   padding: 2rem;
   border-right: 1px solid rgba(0, 0, 0, 0.1);
+  gap: 1rem;
 }
 
 .navbar img {
   margin-left: 0.5rem;
 }
 
-.navbar > span:nth-child(2) {
+.router-link {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.navbar > span:last-child {
   display: flex;
   align-items: center;
   cursor: pointer;
@@ -99,7 +111,7 @@ button {
 
 .navbar > span:nth-child(1) {
   font-size: x-large;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   padding-bottom: 0.5rem;
 }
@@ -121,6 +133,7 @@ button {
 
 .add-todo-form button {
   width: 4rem;
+  position: relative;
 }
 
 .add-todo-form input {
@@ -155,15 +168,9 @@ button {
   justify-content: center;
   align-items: center;
   padding: 1rem;
+  width: 4rem;
   background-color: rgba(0, 0, 0, 0.03);
   border-radius: 0.5rem;
-}
-
-.todos > div > div:nth-child(2) {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  flex-grow: 1;
 }
 
 .todos span:nth-child(1) {
@@ -172,6 +179,29 @@ button {
 
 .todos span:nth-child(2) {
   font-size: 0.9rem;
+}
+
+input.edit-todo-input {
+  border: none;
+  outline: 1px solid rgba(0, 0, 0, 0.2);
+  width: 17rem;
+  padding: 0;
+}
+
+input.edit-todo-input:first-child {
+  font-size: 1.3rem;
+}
+
+input.edit-todo-input:last-child {
+  font-size: 0.9rem;
+}
+
+input.edit-todo-input:focus {
+  outline: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+input.edit-todo-input:read-only {
+  outline: none;
 }
 
 .todos img {
@@ -196,4 +226,39 @@ button {
   display: flex;
   justify-content: center;
   overflow: auto;
+}
+
+.todos form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex-grow: 1;
+}
+
+.todos button {
+  background-color: transparent;
+  border: none;
+  padding: 0;
+}
+
+.users {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-grow: 1;
+  gap: 1rem;
+}
+
+.users > div {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: rgba(0, 0, 0, 0.03);
+  border-radius: 0.5rem;
+}
+
+.users > div span {
+  width: 12rem;
+  padding: 0.3rem 0.5rem;
 }

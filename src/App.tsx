@@ -4,8 +4,10 @@ import Users from "./components/users";
 import Todos from "./components/todos";
 import Login from "./components/login";
 import Error from "./components/error";
-import { ProvideAuth } from "./auth";
+import { AdminRoute, ProvideAuth } from "./auth";
 import Root from "./components/root";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
 
 const router = createBrowserRouter([
   {
@@ -15,7 +17,11 @@ const router = createBrowserRouter([
     children: [
       {
         path: "users",
-        element: <Users />,
+        element: (
+          <AdminRoute>
+            <Users />
+          </AdminRoute>
+        ),
       },
       {
         path: "todos",
@@ -32,11 +38,14 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <div className="app">
-      <ProvideAuth>
-        <RouterProvider router={router} />
-      </ProvideAuth>
-    </div>
+    <>
+      <div className="app">
+        <ProvideAuth>
+          <RouterProvider router={router} />
+        </ProvideAuth>
+      </div>
+      <ToastContainer position="bottom-center" hideProgressBar />
+    </>
   );
 }
 

@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { Navigate, redirect } from "react-router-dom";
 import { getCurrentSession, login, logout } from "../api";
+import ErrorComponent from "../components/error";
 
 interface User {
   name: string;
@@ -18,6 +19,7 @@ export const AuthContext = createContext<Auth>(null!);
 export function ProvideAuth(props: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [userLoading, setUserLoading] = useState(true);
+  const [serverError, setServerError] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -30,7 +32,9 @@ export function ProvideAuth(props: { children: React.ReactNode }) {
 
         setUser(user);
       } catch (err) {
-        if (err instanceof DOMException && err.name === "AbortError") return; // Development mode only
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        if (err instanceof Error && err.cause !== 401) setServerError(true);
+        else setServerError(false);
         setUserLoading(false);
       }
     })();
@@ -40,17 +44,17 @@ export function ProvideAuth(props: { children: React.ReactNode }) {
 
   const signin = async (f: FormData) => {
     try {
-      const body = JSON.stringify({
-        login: f.get("login"),
-        password: f.get("password"),
-      });
+      const body = {
+        login: f.get("login") as string,
+        password: f.get("password") as string,
+      };
 
       const user = await login(body);
       setUser(user);
 
       redirect("/todos");
-    } catch (error) {
-      if (error instanceof Error) console.log(error.message);
+    } catch (err) {
+      throw err;
     }
   };
 
@@ -58,10 +62,14 @@ export function ProvideAuth(props: { children: React.ReactNode }) {
     try {
       await logout();
       setUser(null);
-    } catch {}
+    } catch (err) {
+      throw err;
+    }
   };
 
-  return (
+  return serverError ? (
+    <ErrorComponent />
+  ) : (
     <AuthContext.Provider value={{ user, signin, signout, userLoading }}>
       {props.children}
     </AuthContext.Provider>
@@ -74,6 +82,6 @@ export function AdminRoute(props: { children: JSX.Element }) {
   return auth.user?.role === "admin" ? (
     props.children
   ) : (
-    <Navigate to="/login" />
+    <Navigate to="/todos" />
   );
 }

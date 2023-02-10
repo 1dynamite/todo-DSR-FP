@@ -1,4 +1,4 @@
-export default function Error() {
+export default function ErrorComponent() {
   return (
     <div
       style={{
