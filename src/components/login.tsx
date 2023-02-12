@@ -28,29 +28,27 @@ export default function Login() {
   if (auth.user) return <Navigate to="/todos" />;
 
   return (
-    <>
-      <form className="auth-form" onSubmit={handleSubmit}>
-        <h2>Login</h2>
-        <ul>
-          <li>
-            <label htmlFor="username">Username:</label>
-            <input type="text" id="username" name="login" required />
-          </li>
-          <li>
-            <label htmlFor="password">Password:</label>
-            <input type="password" id="password" name="password" required />
-          </li>
-        </ul>
-        <button type="submit" disabled={loading}>
-          Submit
-          <ClipLoader
-            size={15}
-            color="white"
-            className="clip-loader"
-            loading={loading}
-          />
-        </button>
-      </form>
-    </>
+    <form className="auth-form" onSubmit={handleSubmit}>
+      <h2>Login</h2>
+      <ul>
+        <li>
+          <label htmlFor="username">Username:</label>
+          <input type="text" id="username" name="login" required />
+        </li>
+        <li>
+          <label htmlFor="password">Password:</label>
+          <input type="password" id="password" name="password" required />
+        </li>
+      </ul>
+      <button type="submit" disabled={loading}>
+        Submit
+        <ClipLoader
+          size={15}
+          color="white"
+          className="clip-loader"
+          loading={loading}
+        />
+      </button>
+    </form>
   );
 }
