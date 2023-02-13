@@ -1,25 +1,46 @@
-import { Navigate, NavLink, Outlet } from "react-router-dom";
-import { useContext, useState } from "react";
+import {
+  LoaderFunctionArgs,
+  Navigate,
+  NavLink,
+  Outlet,
+  redirect,
+  useLoaderData,
+  useNavigate,
+} from "react-router-dom";
+import { useState } from "react";
 import { BarLoader } from "react-spinners";
-import { AuthContext } from "../auth";
 import { toast } from "react-toastify";
+import { getCurrentSession, logout } from "../api";
 
-export default function UserDashboard() {
-  const auth = useContext(AuthContext);
+export interface User {
+  name: string;
+  role: "admin" | "user";
+}
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  try {
+    return await getCurrentSession(request.signal);
+  } catch (err) {
+    if (err instanceof Error && err.cause === 401) throw redirect("/login");
+    throw err;
+  }
+}
+
+export default function Dashboard() {
+  const user = useLoaderData() as User;
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      await auth.signout();
+      await logout();
+      navigate("/login");
     } catch (err) {
       if (err instanceof Error) toast.error(err.message);
     }
     setLoading(false);
   };
-
-  if (auth.userLoading) return <div></div>;
-  if (!auth.user) return <Navigate to="/login" />;
 
   return (
     <div className="root">
@@ -31,7 +52,7 @@ export default function UserDashboard() {
       />
       <nav className="navbar">
         <span>Todos</span>
-        {auth.user.role === "admin" && (
+        {user.role === "admin" && (
           <>
             <NavLink
               to="/users"
@@ -58,7 +79,7 @@ export default function UserDashboard() {
           <img width={16} height={16} alt="logout" src="logout.png" />
         </span>
       </nav>
-      <Outlet />
+      <Outlet context={user} />
     </div>
   );
 }

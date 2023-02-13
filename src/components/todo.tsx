@@ -1,7 +1,8 @@
-import { useContext, useId, useState } from "react";
+import { useId, useState } from "react";
+import { useOutletContext } from "react-router-dom";
 import { toast } from "react-toastify";
 import { editTodo } from "../api";
-import { AuthContext } from "../auth";
+import { User } from "./dashboard";
 
 interface TodoType {
   id: number;
@@ -20,7 +21,7 @@ export default function Todo({
   onEdit: (id: number, body: { title: string; description: string }) => void;
 }) {
   const uniqueId = useId();
-  const auth = useContext(AuthContext);
+  const user = useOutletContext() as User;
   const [deleting, setDeleting] = useState(false);
   const [editing, setEditing] = useState(false);
   const [savingChanges, setSavingChanges] = useState(false);
@@ -66,8 +67,7 @@ export default function Todo({
   };
 
   // For some reason, todo.createdBy corresponds to user.role instead of user.name
-  const authorized =
-    auth.user?.role === "admin" || todo.createdBy === auth.user?.role;
+  const authorized = user.role === "admin" || todo.createdBy === user.role;
 
   return (
     <div style={{ opacity: deleting || savingChanges ? "0.6" : "1" }}>

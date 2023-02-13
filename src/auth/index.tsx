@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { Navigate, redirect } from "react-router-dom";
+import { Navigate, redirect, useLoaderData } from "react-router-dom";
 import { getCurrentSession, login, logout } from "../api";
 import ErrorComponent from "../components/error";
 
@@ -17,11 +17,11 @@ interface Auth {
 export const AuthContext = createContext<Auth>(null!);
 
 export function ProvideAuth(props: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [userLoading, setUserLoading] = useState(true);
-  const [serverError, setServerError] = useState(false);
+  const user = useLoaderData() as User;
+  /* const [user, setUser] = useState<User | null>(null);
+  const [userLoading, setUserLoading] = useState(true); */
 
-  useEffect(() => {
+  /* useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
 
@@ -40,7 +40,7 @@ export function ProvideAuth(props: { children: React.ReactNode }) {
     })();
 
     return () => controller.abort();
-  }, []);
+  }, []); */
 
   const signin = async (f: FormData) => {
     try {
@@ -50,7 +50,7 @@ export function ProvideAuth(props: { children: React.ReactNode }) {
       };
 
       const user = await login(body);
-      setUser(user);
+      /*   setUser(user); */
 
       redirect("/todos");
     } catch (err) {
@@ -61,16 +61,14 @@ export function ProvideAuth(props: { children: React.ReactNode }) {
   const signout = async () => {
     try {
       await logout();
-      setUser(null);
+      /*  setUser(null); */
     } catch (err) {
       throw err;
     }
   };
 
-  return serverError ? (
-    <ErrorComponent />
-  ) : (
-    <AuthContext.Provider value={{ user, signin, signout, userLoading }}>
+  return (
+    <AuthContext.Provider value={{ user, signin, signout, userLoading: true }}>
       {props.children}
     </AuthContext.Provider>
   );

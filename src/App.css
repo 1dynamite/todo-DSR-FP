@@ -1,4 +1,4 @@
-.app {
+.login {
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -76,6 +76,7 @@ button:not([class="native-button"]) {
 }
 
 .root {
+  height: 100vh;
   width: 100%;
   display: flex;
   position: relative;
