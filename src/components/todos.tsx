@@ -60,7 +60,7 @@ export default function Todos() {
   const handleDeleteTodo = async (id: number) => {
     try {
       await deleteTodo(id.toString());
-      setTodos(todos.filter((t) => t.id !== id));
+      setTodos((todos) => todos.filter((t) => t.id !== id));
     } catch (err) {
       if (err instanceof Error) toast.error(err.message);
     }

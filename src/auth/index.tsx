@@ -51,8 +51,6 @@ export function ProvideAuth(props: { children: React.ReactNode }) {
 
       const user = await login(body);
       setUser(user);
-
-      redirect("/todos");
     } catch (err) {
       throw err;
     }

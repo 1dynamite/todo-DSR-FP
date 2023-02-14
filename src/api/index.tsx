@@ -40,9 +40,9 @@ export async function logout() {
 
   if (res.ok) return;
 
-  if (res.status === 401) return redirect("/login");
-
-  throw new Error("Something went wrong. Try refreshing the page");
+  throw new Error("Something went wrong. Try refreshing the page", {
+    cause: res.status,
+  });
 }
 
 export async function getCurrentSession(signal: AbortSignal) {
@@ -82,9 +82,9 @@ export async function getTodos(signal: AbortSignal) {
     return data;
   }
 
-  if (res.status === 401) return redirect("/login");
-
-  throw new Error("Something went wrong. Try refreshing the page");
+  throw new Error("Something went wrong. Try refreshing the page", {
+    cause: res.status,
+  });
 }
 
 export async function addTodo(body: { title: string; description: string }) {
@@ -109,9 +109,9 @@ export async function addTodo(body: { title: string; description: string }) {
     throw new Error(data.message);
   }
 
-  if (res.status === 401) return redirect("/login");
-
-  throw new Error("Something went wrong. Try refreshing the page");
+  throw new Error("Something went wrong. Try refreshing the page", {
+    cause: res.status,
+  });
 }
 
 export async function deleteTodo(id: string) {
@@ -126,9 +126,9 @@ export async function deleteTodo(id: string) {
 
   if (res.ok) return;
 
-  if (res.status === 401) return redirect("/login");
-
-  throw new Error("Something went wrong. Try refreshing the page");
+  throw new Error("Something went wrong. Try refreshing the page", {
+    cause: res.status,
+  });
 }
 
 export async function editTodo(
@@ -153,9 +153,9 @@ export async function editTodo(
     throw new Error(data.message);
   }
 
-  if (res.status === 401) return redirect("/login");
-
-  throw new Error("Something went wrong. Try refreshing the page");
+  throw new Error("Something went wrong. Try refreshing the page", {
+    cause: res.status,
+  });
 }
 
 export async function getUsers(signal: AbortSignal) {
@@ -170,9 +170,9 @@ export async function getUsers(signal: AbortSignal) {
   }
 
   if (!res.ok) {
-    if (res.status === 401) return redirect("/login");
-
-    throw new Error("Something went wrong. Try refreshing the page");
+    throw new Error("Something went wrong. Try refreshing the page", {
+      cause: res.status,
+    });
   }
 
   const data = await res.json();
