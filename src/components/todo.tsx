@@ -1,8 +1,8 @@
 import { useId, useState } from "react";
-import { useOutletContext } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import { toast } from "react-toastify";
-import { editTodo } from "../api";
-import { User } from "./dashboard";
+import { deleteTodo, editTodo } from "../api";
+import { HttpError, User } from "../types";
 
 interface TodoType {
   id: number;
@@ -25,12 +25,17 @@ export default function Todo({
   const [deleting, setDeleting] = useState(false);
   const [editing, setEditing] = useState(false);
   const [savingChanges, setSavingChanges] = useState(false);
+  const navigate = useNavigate();
 
   const handleDelete = async () => {
+    setDeleting(true);
+
     try {
-      setDeleting(true);
-      await handleDeleteProp(todo.id);
+      await deleteTodo(todo.id.toString());
+
+      handleDeleteProp(todo.id);
     } catch (err) {
+      if (err instanceof HttpError && err.status === 401) navigate("/login");
       if (err instanceof Error) toast.error(err.message);
     }
 
@@ -60,6 +65,7 @@ export default function Todo({
       handleSaveChangesProp(id, body);
       setEditing(false);
     } catch (err) {
+      if (err instanceof HttpError && err.status === 401) navigate("/login");
       if (err instanceof Error) toast.error(err.message);
     }
 

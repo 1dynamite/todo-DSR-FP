@@ -1,39 +1,20 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import { BeatLoader, ClipLoader } from "react-spinners";
 import { toast } from "react-toastify";
-import { addTodo, deleteTodo, getTodos } from "../api";
+import { addTodo, useTodos } from "../api";
+import { HttpError, User } from "../types";
 import Todo from "./todo";
 
-interface TodoType {
-  id: number;
-  title: string;
-  description: string;
-  createdBy: string;
-}
-
 export default function Todos() {
-  const [todos, setTodos] = useState<TodoType[]>([]);
-  const [addTodoLoading, setAddTodoLoading] = useState(false);
-  const [getTodosLoading, setGetTodosLoading] = useState(false);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    const signal = controller.signal;
-
-    (async () => {
-      try {
-        setGetTodosLoading(true);
-        const todos = await getTodos(signal);
-        setTodos(todos);
-      } catch (err) {
-        if (err instanceof DOMException && err.name === "AbortError") return;
-        if (err instanceof Error) toast.error(err.message);
-      }
-      setGetTodosLoading(false);
-    })();
-
-    return () => controller.abort();
-  }, []);
+  const navigate = useNavigate();
+  const { todos, isLoadingTodos, mutate } = useTodos((err: HttpError) => {
+    if (err && err.status === 401) navigate("/login");
+    if (err) toast.error(err.message);
+  });
+  const [isAddingTodo, setIsAddingTodo] = useState(false);
+  const user = useOutletContext() as User | undefined;
+  if (!user) return <></>;
 
   const handleAddTodo = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -47,30 +28,33 @@ export default function Todos() {
     };
 
     try {
-      setAddTodoLoading(true);
+      setIsAddingTodo(true);
       const todo = await addTodo(body);
-      setTodos([...todos, todo]);
+
+      mutate([...todos, todo], { revalidate: false });
     } catch (err) {
+      if (err instanceof HttpError && err.status === 401) navigate("/login");
       if (err instanceof Error) toast.error(err.message);
     }
 
-    setAddTodoLoading(false);
+    setIsAddingTodo(false);
   };
 
   const handleDeleteTodo = async (id: number) => {
-    try {
-      await deleteTodo(id.toString());
-      setTodos(todos.filter((t) => t.id !== id));
-    } catch (err) {
-      if (err instanceof Error) toast.error(err.message);
-    }
+    mutate(
+      todos.filter((t) => t.id !== id),
+      { revalidate: false }
+    );
   };
 
   const handleEditTodo = (
     id: number,
-    body: { title: string; description: string }
+    data: { title: string; description: string }
   ) => {
-    setTodos(todos.map((t) => (t.id === id ? { ...t, ...body } : t)));
+    mutate(
+      todos.map((t) => (t.id === id ? { ...t, ...data } : t)),
+      { revalidate: false }
+    );
   };
 
   return (
@@ -92,7 +76,7 @@ export default function Todos() {
                 size={15}
                 color="#1f2937"
                 className="clip-loader-add-todo"
-                loading={addTodoLoading}
+                loading={isAddingTodo}
               />
             </button>
           </li>
@@ -111,7 +95,7 @@ export default function Todos() {
           ))}
 
           <BeatLoader
-            loading={getTodosLoading}
+            loading={isLoadingTodos}
             color="#1f2937"
             style={{ margin: "auto" }}
           />

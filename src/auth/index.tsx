@@ -1,85 +1,12 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { Navigate, redirect, useLoaderData } from "react-router-dom";
-import { getCurrentSession, login, logout } from "../api";
-import ErrorComponent from "../components/error";
+import { Navigate, useOutletContext } from "react-router-dom";
+import { User } from "../types";
 
-interface User {
-  name: string;
-  role: "admin" | "user";
-}
-interface Auth {
-  user: User | null;
-  signin: (f: FormData) => Promise<void>;
-  signout: () => Promise<void>;
-  userLoading: boolean;
-}
+export function AdminRoute({ children }: { children: JSX.Element }) {
+  const user = useOutletContext() as User | undefined;
 
-export const AuthContext = createContext<Auth>(null!);
+  if (!user) return children;
 
-export function ProvideAuth(props: { children: React.ReactNode }) {
-  const user = useLoaderData() as User;
-  /* const [user, setUser] = useState<User | null>(null);
-  const [userLoading, setUserLoading] = useState(true); */
+  if (user.role !== "admin") return <Navigate to="/todos" replace={true} />;
 
-  /* useEffect(() => {
-    const controller = new AbortController();
-    const signal = controller.signal;
-
-    (async () => {
-      try {
-        const user = await getCurrentSession(signal);
-        setUserLoading(false);
-
-        setUser(user);
-      } catch (err) {
-        if (err instanceof DOMException && err.name === "AbortError") return;
-        if (err instanceof Error && err.cause !== 401) setServerError(true);
-        else setServerError(false);
-        setUserLoading(false);
-      }
-    })();
-
-    return () => controller.abort();
-  }, []); */
-
-  const signin = async (f: FormData) => {
-    try {
-      const body = {
-        login: f.get("login") as string,
-        password: f.get("password") as string,
-      };
-
-      const user = await login(body);
-      /*   setUser(user); */
-
-      redirect("/todos");
-    } catch (err) {
-      throw err;
-    }
-  };
-
-  const signout = async () => {
-    try {
-      await logout();
-      /*  setUser(null); */
-    } catch (err) {
-      throw err;
-    }
-  };
-
-  return (
-    <AuthContext.Provider value={{ user, signin, signout, userLoading: true }}>
-      {props.children}
-    </AuthContext.Provider>
-  );
-}
-
-export function AdminRoute(props: { children: JSX.Element }) {
-  const auth = useContext(AuthContext);
-
-  return auth.user?.role === "admin" ? (
-    props.children
-  ) : (
-    <Navigate to="/todos" />
-  );
+  return children;
 }

@@ -1,6 +1,9 @@
-import { redirect } from "react-router-dom";
+import useSWR from "swr";
+import { HttpError, Todo, User } from "../types";
 
 const BASE_URL = "http://localhost:3000/api/v1/";
+
+const ERR_MSG = "Something went wrong. Try refreshing the page";
 
 export async function login(body: { login: string; password: string }) {
   try {
@@ -11,21 +14,17 @@ export async function login(body: { login: string; password: string }) {
       body: JSON.stringify(body),
     });
   } catch (err) {
-    throw new Error("Something went wrong. Try refreshing the page");
+    throw new HttpError(ERR_MSG, { cause: err });
   }
 
-  if (res.ok) {
-    const data = await res.json();
-
-    return data;
-  }
+  if (res.ok) return await res.json();
 
   if (res.status === 400) {
     const data = await res.json();
-    throw new Error(data.message);
+    throw new HttpError(data.message);
   }
 
-  throw new Error("Something went wrong. Try refreshing the page");
+  throw new HttpError(ERR_MSG, { cause: res });
 }
 
 export async function logout() {
@@ -35,56 +34,12 @@ export async function logout() {
       credentials: "include",
     });
   } catch (err) {
-    throw new Error("Something went wrong. Try refreshing the page");
+    throw new HttpError(ERR_MSG, { cause: err });
   }
 
   if (res.ok) return;
 
-  if (res.status === 401) return redirect("/login");
-
-  throw new Error("Something went wrong. Try refreshing the page");
-}
-
-export async function getCurrentSession(signal: AbortSignal) {
-  try {
-    var res = await fetch(`${BASE_URL}me`, {
-      credentials: "include",
-      signal,
-    });
-  } catch (err) {
-    if (err instanceof DOMException) throw err;
-    throw new Error("Something went wrong. Try refreshing the page");
-  }
-
-  if (res.ok) {
-    const data = await res.json();
-    return data;
-  }
-
-  throw new Error("Something went wrong. Try refreshing the page", {
-    cause: res.status,
-  });
-}
-
-export async function getTodos(signal: AbortSignal) {
-  try {
-    var res = await fetch(`${BASE_URL}todos`, {
-      credentials: "include",
-      signal,
-    });
-  } catch (err) {
-    if (err instanceof DOMException) throw err;
-    throw new Error("Something went wrong. Try refreshing the page");
-  }
-
-  if (res.ok) {
-    const data = await res.json();
-    return data;
-  }
-
-  if (res.status === 401) return redirect("/login");
-
-  throw new Error("Something went wrong. Try refreshing the page");
+  throw new HttpError(ERR_MSG, { cause: res, status: res.status });
 }
 
 export async function addTodo(body: { title: string; description: string }) {
@@ -96,22 +51,17 @@ export async function addTodo(body: { title: string; description: string }) {
       body: JSON.stringify(body),
     });
   } catch (err) {
-    throw new Error("Something went wrong. Try refreshing the page");
+    throw new HttpError(ERR_MSG, { cause: err });
   }
 
-  if (res.ok) {
-    const data = await res.json();
-    return data;
-  }
+  if (res.ok) return await res.json();
 
   if (res.status === 400) {
     const data = await res.json();
-    throw new Error(data.message);
+    throw new HttpError(data.message);
   }
 
-  if (res.status === 401) return redirect("/login");
-
-  throw new Error("Something went wrong. Try refreshing the page");
+  throw new HttpError(ERR_MSG, { cause: res, status: res.status });
 }
 
 export async function deleteTodo(id: string) {
@@ -121,14 +71,12 @@ export async function deleteTodo(id: string) {
       credentials: "include",
     });
   } catch (err) {
-    throw new Error("Something went wrong. Try refreshing the page");
+    throw new HttpError(ERR_MSG, { cause: err });
   }
 
   if (res.ok) return;
 
-  if (res.status === 401) return redirect("/login");
-
-  throw new Error("Something went wrong. Try refreshing the page");
+  throw new HttpError(ERR_MSG, { cause: res, status: res.status });
 }
 
 export async function editTodo(
@@ -143,39 +91,110 @@ export async function editTodo(
       body: JSON.stringify(body),
     });
   } catch (err) {
-    throw new Error("Something went wrong. Try refreshing the page");
+    throw new HttpError(ERR_MSG, { cause: err });
   }
 
   if (res.ok) return;
 
   if (res.status === 400) {
     const data = await res.json();
-    throw new Error(data.message);
+    throw new HttpError(data.message);
   }
 
-  if (res.status === 401) return redirect("/login");
-
-  throw new Error("Something went wrong. Try refreshing the page");
+  throw new HttpError(ERR_MSG, { cause: res, status: res.status });
 }
 
-export async function getUsers(signal: AbortSignal) {
-  try {
-    var res = await fetch(`${BASE_URL}users`, {
-      credentials: "include",
-      signal,
-    });
-  } catch (err) {
-    if (err instanceof DOMException) throw err;
-    throw new Error("Something went wrong. Try refreshing the page");
-  }
+export function useSession(
+  locationState: User,
+  handleError: (err: any) => void
+) {
+  const { data, error } = useSWR<User, HttpError, "me">(
+    "me",
+    async (url) => {
+      if (locationState) return locationState;
 
-  if (!res.ok) {
-    if (res.status === 401) return redirect("/login");
+      try {
+        var res = await fetch(`${BASE_URL}${url}`, {
+          credentials: "include",
+        });
+      } catch (err) {
+        throw new HttpError(ERR_MSG, { cause: err });
+      }
 
-    throw new Error("Something went wrong. Try refreshing the page");
-  }
+      if (res.ok) return await res.json();
 
-  const data = await res.json();
+      throw new HttpError(ERR_MSG, { cause: res, status: res.status });
+    },
+    {
+      onError(err, key, config) {
+        handleError(err);
+      },
+    }
+  );
 
-  return data;
+  return {
+    user: data,
+    error,
+  };
+}
+
+export function useTodos(handleError: (err: HttpError) => void) {
+  const { data, isLoading, mutate } = useSWR<Todo[], HttpError, "todos">(
+    "todos",
+    async (url) => {
+      try {
+        var res = await fetch(`${BASE_URL}${url}`, {
+          credentials: "include",
+        });
+      } catch (err) {
+        throw new HttpError(ERR_MSG, { cause: err });
+      }
+
+      if (res.ok) return await res.json();
+
+      throw new HttpError(ERR_MSG, { cause: res, status: res.status });
+    },
+    {
+      onError(err, key, config) {
+        handleError(err);
+      },
+    }
+  );
+
+  return {
+    todos: data ?? [],
+    isLoadingTodos: isLoading,
+    mutate,
+  };
+}
+
+export function useUsers(handleError: (err: HttpError) => void) {
+  const { data, isLoading } = useSWR<User[], HttpError, "users">(
+    "users",
+    async (url) => {
+      try {
+        var res = await fetch(`${BASE_URL}${url}`, {
+          credentials: "include",
+        });
+      } catch (err) {
+        throw new HttpError(ERR_MSG, { cause: err });
+      }
+
+      if (!res.ok) {
+        throw new HttpError(ERR_MSG, { cause: res, status: res.status });
+      }
+
+      return await res.json();
+    },
+    {
+      onError(err, key, config) {
+        handleError(err);
+      },
+    }
+  );
+
+  return {
+    users: data ?? [],
+    isLoading,
+  };
 }

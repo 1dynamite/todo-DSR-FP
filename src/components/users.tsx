@@ -1,35 +1,16 @@
-import { useEffect, useState } from "react";
+import { useOutletContext } from "react-router-dom";
 import { BeatLoader } from "react-spinners";
 import { toast } from "react-toastify";
-import { getUsers } from "../api";
-
-interface UserType {
-  name: string;
-  role: string;
-}
+import { useUsers } from "../api";
+import { HttpError, User } from "../types";
 
 export default function Users() {
-  const [users, setUsers] = useState<UserType[]>([]);
-  const [usersLoading, setUsersLoading] = useState(false);
+  const { users, isLoading } = useUsers((err: HttpError) => {
+    if (err) toast.error(err.message);
+  });
+  const sessionUser = useOutletContext() as User | undefined;
 
-  useEffect(() => {
-    const controller = new AbortController();
-    const signal = controller.signal;
-
-    (async () => {
-      try {
-        setUsersLoading(true);
-        const users = await getUsers(signal);
-        setUsers(users);
-      } catch (err) {
-        if (err instanceof DOMException && err.name === "AbortError") return;
-        if (err instanceof Error) toast.error(err.message);
-      }
-      setUsersLoading(false);
-    })();
-
-    return () => controller.abort();
-  }, []);
+  if (!sessionUser) return <></>;
 
   return (
     <div className="users">
@@ -48,7 +29,7 @@ export default function Users() {
       ))}
 
       <BeatLoader
-        loading={usersLoading}
+        loading={isLoading}
         color="#1f2937"
         style={{ marginTop: "1rem" }}
       />

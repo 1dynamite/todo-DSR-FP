@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { redirect, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 import { toast } from "react-toastify";
 import { login } from "../api";
@@ -22,9 +22,8 @@ export default function Login() {
     setLoading(true);
 
     try {
-      await login(body);
-
-      navigate("/todos");
+      const user = await login(body);
+      navigate("/todos", { state: user });
     } catch (err) {
       if (err instanceof Error) toast.error(err.message);
     }
