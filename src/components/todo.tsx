@@ -35,7 +35,8 @@ export default function Todo({
 
       handleDeleteProp(todo.id);
     } catch (err) {
-      if (err instanceof HttpError && err.status === 401) navigate("/login");
+      if (err instanceof HttpError && err.status === 401)
+        return navigate("/login");
       if (err instanceof Error) toast.error(err.message);
     }
 
@@ -65,7 +66,8 @@ export default function Todo({
       handleSaveChangesProp(id, body);
       setEditing(false);
     } catch (err) {
-      if (err instanceof HttpError && err.status === 401) navigate("/login");
+      if (err instanceof HttpError && err.status === 401)
+        return navigate("/login");
       if (err instanceof Error) toast.error(err.message);
     }
 

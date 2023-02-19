@@ -1,15 +1,19 @@
-import { useOutletContext } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import { BeatLoader } from "react-spinners";
 import { toast } from "react-toastify";
 import { useUsers } from "../api";
 import { HttpError, User } from "../types";
 
 export default function Users() {
+  const navigate = useNavigate();
+
   const { users, isLoading } = useUsers((err: HttpError) => {
+    if (err instanceof HttpError && err.status === 401)
+      return navigate("/login");
     if (err) toast.error(err.message);
   });
-  const sessionUser = useOutletContext() as User | undefined;
 
+  const sessionUser = useOutletContext() as User | undefined;
   if (!sessionUser) return <></>;
 
   return (

@@ -8,11 +8,14 @@ import Todo from "./todo";
 
 export default function Todos() {
   const navigate = useNavigate();
+
   const { todos, isLoadingTodos, mutate } = useTodos((err: HttpError) => {
-    if (err && err.status === 401) navigate("/login");
+    if (err && err.status === 401) return navigate("/login");
     if (err) toast.error(err.message);
   });
+
   const [isAddingTodo, setIsAddingTodo] = useState(false);
+
   const user = useOutletContext() as User | undefined;
   if (!user) return <></>;
 
@@ -33,7 +36,8 @@ export default function Todos() {
 
       mutate([...todos, todo], { revalidate: false });
     } catch (err) {
-      if (err instanceof HttpError && err.status === 401) navigate("/login");
+      if (err instanceof HttpError && err.status === 401)
+        return navigate("/login");
       if (err instanceof Error) toast.error(err.message);
     }
 
