@@ -28,6 +28,10 @@ const router = createBrowserRouter([
         path: "todos",
         element: <Todos />,
       },
+      {
+        index: true,
+        element: <Todos />,
+      },
     ],
   },
 
