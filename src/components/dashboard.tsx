@@ -18,6 +18,8 @@ export default function Dashboard() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   if (error) return <div></div>;
+
+  // this will avoid waterfalls
   if (!user) return <Outlet />;
 
   const handleLogout = async () => {
@@ -28,6 +30,8 @@ export default function Dashboard() {
       mutate(() => true, undefined, { revalidate: false });
       navigate("/login");
     } catch (err) {
+      if (err instanceof HttpError && err.status === 401)
+        return navigate("/login");
       if (err instanceof Error) toast.error(err.message);
     }
     setIsLoggingOut(false);
