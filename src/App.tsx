@@ -1,57 +1,65 @@
-import React from 'react';
-import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
-import './App.css';
+import "./App.css";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
+import { useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "./app/hooks";
+import Login from "./features/session/Login";
+import {
+  fetchSessionUserAsync,
+  selectSessionStatus,
+} from "./features/session/sessionSlice";
+import Dashboard from "./features/session/Dashboard";
+import Error from "./components/error";
+import Todos from "./features/todos/Todos";
+import Users from "./features/users/users";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Dashboard />,
+    errorElement: <Error />,
+    children: [
+      {
+        path: "users",
+        element: <Users />,
+      },
+      {
+        path: "todos",
+        element: <Todos />,
+      },
+      {
+        index: true,
+        element: <Todos />,
+      },
+    ],
+  },
+
+  {
+    path: "login",
+    element: <Login />,
+  },
+]);
 
 function App() {
+  const dispatch = useAppDispatch();
+  const loading = useAppSelector(selectSessionStatus);
+
+  useEffect(() => {
+    const promise = dispatch(fetchSessionUserAsync());
+
+    return () => {
+      promise.abort();
+    };
+  }, [dispatch]);
+
+  if (loading) return null;
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Counter />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <span>
-          <span>Learn </span>
-          <a
-            className="App-link"
-            href="https://reactjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux-toolkit.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux Toolkit
-          </a>
-          ,<span> and </span>
-          <a
-            className="App-link"
-            href="https://react-redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React Redux
-          </a>
-        </span>
-      </header>
-    </div>
+    <>
+      <RouterProvider router={router} />
+      <ToastContainer position="bottom-center" hideProgressBar />
+    </>
   );
 }
 
