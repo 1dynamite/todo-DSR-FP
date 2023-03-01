@@ -88,7 +88,7 @@ export const todosSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchTodosAsync.pending, (state) => {
-        state.loading = true;
+        if (state.value.length === 0) state.loading = true;
       })
       .addCase(fetchTodosAsync.fulfilled, (state, { payload }) => {
         state.loading = false;
