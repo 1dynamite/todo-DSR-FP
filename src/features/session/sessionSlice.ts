@@ -7,15 +7,11 @@ import { fetchSessionUser, login, logout } from "./sessionAPI";
 export interface SessionState {
   value: User | null;
   loading: boolean;
-  isLoggingIn: boolean;
-  isLoggingOut: boolean;
 }
 
 const initialState: SessionState = {
   value: null,
   loading: false,
-  isLoggingIn: false,
-  isLoggingOut: false,
 };
 
 export const loginAsync = createAsyncThunk(
