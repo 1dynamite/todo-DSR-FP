@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
-import { CLEAR_CACHE, RootState } from "../../app/store";
+import { clearCache, RootState } from "../../app/store";
 import { HttpError, Todo } from "../../types";
 import { addTodo, deleteTodo, editTodo, fetchTodos } from "./todosAPI";
 
@@ -21,7 +21,7 @@ export const fetchTodosAsync = createAsyncThunk(
       return await fetchTodos(signal);
     } catch (err) {
       if (err instanceof HttpError && err.status === 401)
-        dispatch({ type: CLEAR_CACHE });
+        dispatch(clearCache());
       else if (err instanceof HttpError) toast.error(err.message);
       throw err;
     }
@@ -35,7 +35,7 @@ export const addTodoAsync = createAsyncThunk(
       return await addTodo(data);
     } catch (err) {
       if (err instanceof HttpError && err.status === 401)
-        dispatch({ type: CLEAR_CACHE });
+        dispatch(clearCache());
       else if (err instanceof HttpError) toast.error(err.message);
       throw err;
     }
@@ -50,7 +50,7 @@ export const deleteTodoAsync = createAsyncThunk(
       return id;
     } catch (err) {
       if (err instanceof HttpError && err.status === 401)
-        dispatch({ type: CLEAR_CACHE });
+        dispatch(clearCache());
       else if (err instanceof HttpError) toast.error(err.message);
       throw err;
     }
@@ -74,7 +74,7 @@ export const editTodoAsync = createAsyncThunk(
       return arg;
     } catch (err) {
       if (err instanceof HttpError && err.status === 401)
-        dispatch({ type: CLEAR_CACHE });
+        dispatch(clearCache());
       else if (err instanceof HttpError) toast.error(err.message);
       throw err;
     }

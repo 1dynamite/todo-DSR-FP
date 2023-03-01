@@ -15,14 +15,16 @@ const appReducer = combineReducers({
   users: usersReducer,
 });
 
-export const CLEAR_CACHE = "CLEAR_CACHE";
+export function clearCache() {
+  return { type: "CLEAR_CACHE" };
+}
 
 // clear cache when logging out
 const rootReducer = (
   state: ReturnType<typeof appReducer> | undefined,
   action: AnyAction
 ) => {
-  if (action.type === CLEAR_CACHE) {
+  if (action.type === clearCache().type) {
     return appReducer(undefined, action);
   }
 

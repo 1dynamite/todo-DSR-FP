@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
-import { CLEAR_CACHE, RootState } from "../../app/store";
+import { clearCache, RootState } from "../../app/store";
 import { HttpError, User } from "../../types";
 import { fetchUsers } from "./usersAPI";
 
@@ -21,7 +21,7 @@ export const fetchUsersAsync = createAsyncThunk(
       return await fetchUsers(signal);
     } catch (err) {
       if (err instanceof HttpError && err.status === 401)
-        dispatch({ type: CLEAR_CACHE });
+        dispatch(clearCache());
       else if (err instanceof HttpError) toast.error(err.message);
       throw err;
     }
